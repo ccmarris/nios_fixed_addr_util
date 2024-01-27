@@ -2,7 +2,7 @@
 NIOS Fixed Address Util
 =======================
 
-| Version: 0.0.1
+| Version: 0.1.0
 | Author: Chris Marrison
 | Email: chris@infoblox.com
 
