@@ -21,6 +21,7 @@ Prerequisites
 -------------
 
 Python 3.8+
+Fixed Address lease time capture on NIOS
 
 
 Installing Python
@@ -75,6 +76,25 @@ Complete list of modules::
   import time
   import datetime
   from rich import print
+
+
+Configuring Fixed Address Lease capture
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+NIOS allows you to capture the hostname and lease time when assigning
+fixed addresses via DHCP. The script uses this information to determine
+whether a fixed address has been used within the last 'n' days.
+
+To configure enable this within NIOS you need to go to the Grid DHCP 
+Properties, you will need to "Toggle Advanced Mode" to on.
+
+The setting can be found in:  Grid DHCP Properties -> General -> Advanced 
+
+Check the box as shown below:
+
+..image:: ./Capture_fixed_address_leasetime.png
+  :alt: "*Fixed Address Lease* [x] Capture hostname and lease time when assigning fixed addresses"
+ 
 
 
 Installation
