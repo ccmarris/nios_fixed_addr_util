@@ -93,7 +93,7 @@ The setting can be found in:  Grid DHCP Properties -> General -> Advanced
 Check the box as shown below:
 
 ..image:: ./Capture_fixed_address_leasetime.png
-  :alt: "*Fixed Address Lease* [x] Capture hostname and lease time when assigning fixed addresses"
+  :alt: "**Fixed Address Lease** [x] Capture hostname and lease time when assigning fixed addresses"
  
 
 
