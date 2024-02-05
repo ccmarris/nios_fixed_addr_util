@@ -11,7 +11,7 @@
 
  Author: Chris Marrison
 
- Date Last Updated: 20240126
+ Date Last Updated: 20240205
 
  Todo:
 
@@ -42,7 +42,7 @@
  POSSIBILITY OF SUCH DAMAGE.
 
 '''
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 __author__ = 'Chris Marrison'
 __author_email__ = 'chris@infoblox.com'
 __license__ = 'BSD'
@@ -404,13 +404,13 @@ class FIXEDADDR:
         '''
         '''
         return_fields = '_return_fields=address,binding_state,hardware,cltt,ends,served_by'
-        url = f'{self.base_url}/lease?{return_fields}&address={ip}&_max_results=1'
+        url = f'{self.base_url}/lease?{return_fields}&address={ip}'
 
         if params:
             url = self._add_params(url, first_param=False, **params)
 
         # Use base session
-        logging.info(f'Retrieving lease')
+        logging.info(f'Retrieving leases')
         response = self.wapi_get(url=url)
         if response:
             logging.info('Lease retrieved successfully')
@@ -446,29 +446,62 @@ class FIXEDADDR:
                 match_client = fa.get('match_client')
                 if match_client == 'RESERVED':
                     in_use = 'Reserved'
-                else:
+                elif match_client == 'MAC_ADDRESS':
+                    # Check mac address matches hardware
                     ip = fa.get('ipv4addr')
-                    logging.info(f'Checking lease data for ip: {ip}')
-                    lease = self.get_lease_info(ip=ip)
+                    mac = fa.get('mac')
+                    logging.info(f'Checking lease data for: {ip}, {mac}')
+                    leases = self.get_lease_info(ip=ip)
                     if lease:
                         logging.debug(f'Lease data: {lease}')
-                        cltt = lease[0].get('cltt')
-                        
-                        if cltt:
-                            # Check timestamp
-                            if self.check_timestamp(timestamp=cltt, days=days):
-                                in_use = 'True'
-                            else:
-                                in_use = 'False'
-                            logging.debug(f'IP: {ip}, Used: {in_use}')
-                        else:
-                            # No CLTT found
-                            in_use = 'False'
-                            logging.debug(f'No CLTT for IP: {ip}, Used: {in_use}')
+                        for l in leases:
+                            if mac == l.get('hardware'):
+                                cltt = l.get('cltt')
+                            
+                                if cltt:
+                                    # Check timestamp
+                                    if self.check_timestamp(timestamp=cltt, days=days):
+                                        in_use = 'True'
+                                        break
+                                    else:
+                                        in_use = 'False'
+                                    logging.debug(f'IP: {ip}, Used: {in_use}')
+                                else:
+                                    # No CLTT found
+                                    in_use = 'False'
+                                    logging.debug(f'No CLTT for IP: {ip}, Used: {in_use}')
                     else:
                         # No lease found
                         in_use = 'Unknown'
                         logging.debug(f'No lease for IP: {ip}, Used: {in_use}')
+                else:
+                    # Just check for a CLTT
+                    ip = fa.get('ipv4addr')
+                    logging.info(f'Checking lease data for: {ip}')
+                    leases = self.get_lease_info(ip=ip)
+                    if lease:
+                        logging.debug(f'Lease data: {lease}')
+                        for l in leases:
+                            cltt = l.get('cltt')
+                            # Can't seem to find client_id in lease object 
+                            # so just look for a CLTT
+                            if cltt:
+                                # Check timestamp
+                                if self.check_timestamp(timestamp=cltt, days=days):
+                                    in_use = 'True'
+                                    break
+                                else:
+                                    in_use = 'False'
+                                logging.debug(f'IP: {ip}, Used: {in_use}')
+                            else:
+                                # No CLTT found
+                                in_use = 'False'
+                                logging.debug(f'No CLTT for IP: {ip}, Used: {in_use}')
+                    else:
+                        # No lease found
+                        in_use = 'Unknown'
+                        logging.debug(f'No lease for IP: {ip}, Used: {in_use}')
+
 
                 # Add attribute to object and store
                 faddr.append(self.update_fixed_addr(faddr=fa, in_use=in_use))
