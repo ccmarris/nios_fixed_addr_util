@@ -53,6 +53,8 @@ import argparse
 import configparser
 import datetime
 import time
+import csv
+import sys
 from rich import print
 
 def parseargs():
@@ -69,7 +71,9 @@ def parseargs():
     parse = argparse.ArgumentParser(description=description)
     parse.add_argument('-c', '--config', type=str, default='gm.ini',
                         help="Override ini file")
-    parse.add_argument('-f', '--filter', type=str, default="all",
+    parse.add_argument('-f', '--file', type=str, default='',
+                        help='Output CSV to file')
+    parse.add_argument('-F', '--filter', type=str, default="all",
                         help="Filter report by type [ all, True, False, Reserved, Unknown ]")
     parse.add_argument('-u', '--update', action='store_true', 
                         help="Update fixed address object in NIOS")
@@ -616,11 +620,14 @@ class FIXEDADDR:
         return use
 
 
-    def report(self, match_use: str = 'all'):
+    def report(self, file=sys.stdout, 
+                     type='csv',
+                     match_use: str = 'all'):
         '''
         Simple Report
 
         Parameters:
+            file: filehandler = File handler obj or sys.stdout by default
             match_use: str = Use type to report on or all
         '''
         line: str = ''
@@ -632,20 +639,22 @@ class FIXEDADDR:
                         self.ea_name ]
         
 
+        if type == 'csv':
+            w = csv.writer(file)
+            w.writerow(header)
 
-        print(f'{header}')
-        for fa in self.fixedaddr:
-            line = ''
-            use = self.retrieve_use(fa)
+            for fa in self.fixedaddr:
+                line = ''
+                use = self.retrieve_use(fa)
 
-            if use == match_use or match_use == 'all':
-                line = [ fa.get('ipv4addr'),
-                        fa.get('match_client'),
-                        fa.get('mac'),
-                        fa.get('dhcp_client_identifier'),
-                        use ]
-                
-                print(f'{line}')
+                if use == match_use or match_use == 'all':
+                    line = [ fa.get('ipv4addr'),
+                            fa.get('match_client'),
+                            fa.get('mac'),
+                            fa.get('dhcp_client_identifier'),
+                            use ]
+                    
+                    w.writerow(line)
     
         return
     
@@ -673,7 +682,11 @@ def main():
     # Check status of fixed addresses
     FixedAddr.check_in_use()
     # Output Report
-    FixedAddr.report(match_use=args.filter)
+    if args.file:
+        with open(args.file, mode='w', newline='') as f:
+            FixedAddr.report(file=f, type=csv, match_use=args.filter)
+    else:
+        FixedAddr.report(match_use=args.filter)
 
     run_time = time.perf_counter() - t1
     
