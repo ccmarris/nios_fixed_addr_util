@@ -42,7 +42,7 @@
  POSSIBILITY OF SUCH DAMAGE.
 
 '''
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 __author__ = 'Chris Marrison'
 __author_email__ = 'chris@infoblox.com'
 __license__ = 'BSD'
@@ -452,8 +452,8 @@ class FIXEDADDR:
                     mac = fa.get('mac')
                     logging.info(f'Checking lease data for: {ip}, {mac}')
                     leases = self.get_lease_info(ip=ip)
-                    if lease:
-                        logging.debug(f'Lease data: {lease}')
+                    if leases:
+                        logging.debug(f'Lease data: {leases}')
                         for l in leases:
                             if mac == l.get('hardware'):
                                 cltt = l.get('cltt')
@@ -473,14 +473,14 @@ class FIXEDADDR:
                     else:
                         # No lease found
                         in_use = 'Unknown'
-                        logging.debug(f'No lease for IP: {ip}, Used: {in_use}')
+                        logging.debug(f'No leases found for IP: {ip}, Used: {in_use}')
                 else:
                     # Just check for a CLTT
                     ip = fa.get('ipv4addr')
                     logging.info(f'Checking lease data for: {ip}')
                     leases = self.get_lease_info(ip=ip)
-                    if lease:
-                        logging.debug(f'Lease data: {lease}')
+                    if leases:
+                        logging.debug(f'Lease data: {leases}')
                         for l in leases:
                             cltt = l.get('cltt')
                             # Can't seem to find client_id in lease object 
