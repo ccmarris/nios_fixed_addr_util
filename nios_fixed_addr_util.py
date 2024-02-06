@@ -42,7 +42,7 @@
  POSSIBILITY OF SUCH DAMAGE.
 
 '''
-__version__ = '0.1.2'
+__version__ = '0.1.5'
 __author__ = 'Chris Marrison'
 __author_email__ = 'chris@infoblox.com'
 __license__ = 'BSD'

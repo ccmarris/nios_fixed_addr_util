@@ -2,7 +2,7 @@
 NIOS Fixed Address Util
 =======================
 
-| Version: 0.1.0
+| Version: 0.1.5
 | Author: Chris Marrison
 | Email: chris@infoblox.com
 
@@ -75,7 +75,11 @@ Complete list of modules::
   import configparser
   import time
   import datetime
+  import sys
+  import csv
   from rich import print
+  from rich.console import Console
+  from rich.table import Table
 
 
 Configuring Fixed Address Lease capture
@@ -152,7 +156,8 @@ available::
     -h, --help            show this help message and exit
     -c CONFIG, --config CONFIG
                           Override ini file
-    -f FILTER, --filter FILTER
+    -f FILE, --file FILE  Output CSV to file
+    -F FILTER, --filter FILTER
                           Filter report by type [ all, True, False, Reserved, Unknown ]
     -u, --update          Update fixed address object in NIOS
     -e EA, --ea EA        Name of EA to use (type STRING)
@@ -167,28 +172,38 @@ nios_fixed_addr_util
 Examples
 --------
 
-Simple Report on Fixed Address:
+Simple Report on Fixed Address::
 
   % ./nios_fixed_addr_util.py --config gm.ini 
+
 
 Enable debug::
 
   % ./nios_fixed_addr_util.py --config gm.ini --debug
 
-Filter report:
+
+Filter report::
 
   % ./nios_fixed_addr_util.py --config gm.ini --match_use 'False'
   % ./nios_fixed_addr_util.py --config gm.ini --match_use 'True'
   % ./nios_fixed_addr_util.py --config gm.ini --match_use 'Reserved'
   % ./nios_fixed_addr_util.py --config gm.ini --match_use 'Unknown'
 
+
+Output to file::
+
+  % ./nios_fixed_addr_util.py --config gm.ini --file fa-report.csv
+
+
 Add/update Extensible Attribute on fixed address objects in NIOS:
 
   % ./nios_fixed_addr_util.py --config gm.ini --update
 
-Use an alternate EA name from default (with auto create):
+
+Use an alternate EA name from default (with auto create)::
 
   % ./nios_fixed_addr_util.py --config gm.ini --update --ea_name 'Lease_status' --auto
+
 
 
 License
