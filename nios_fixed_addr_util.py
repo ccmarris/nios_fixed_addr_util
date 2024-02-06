@@ -56,6 +56,8 @@ import time
 import csv
 import sys
 from rich import print
+from rich.console import Console
+from rich.table import Table
 
 def parseargs():
     '''
@@ -621,14 +623,17 @@ class FIXEDADDR:
 
 
     def report(self, file=sys.stdout, 
-                     type='csv',
+                     format='csv',
                      match_use: str = 'all'):
         '''
         Simple Report
 
         Parameters:
             file: filehandler = File handler obj or sys.stdout by default
+            format: str = ['csv', 'table' or data dump]
             match_use: str = Use type to report on or all
+        
+        Note: file is only used for CSV output
         '''
         line: str = ''
         use: str = ''
@@ -639,10 +644,38 @@ class FIXEDADDR:
                         self.ea_name ]
         
 
-        if type == 'csv':
-            w = csv.writer(file)
-            w.writerow(header)
+        if format == 'csv':
+            # Output in CSV format to file (or sys.stdout)
+            try:
+                w = csv.writer(file)
+                w.writerow(header)
 
+                for fa in self.fixedaddr:
+                    line = ''
+                    use = self.retrieve_use(fa)
+
+                    if use == match_use or match_use == 'all':
+                        line = [ fa.get('ipv4addr'),
+                                fa.get('match_client'),
+                                fa.get('mac'),
+                                fa.get('dhcp_client_identifier'),
+                                use ]
+                        
+                        w.writerow(line)
+            except Exception as err:
+                logging.error(f'Error occured writing CSV: {err}')
+                raise
+
+        elif format == 'table':
+            # Print a 'rich' table
+            console = Console()
+
+            # Create table and add columns
+            table = Table()
+            for h in header:
+                table.add_column(h)
+
+            # Add table rows
             for fa in self.fixedaddr:
                 line = ''
                 use = self.retrieve_use(fa)
@@ -653,9 +686,28 @@ class FIXEDADDR:
                             fa.get('mac'),
                             fa.get('dhcp_client_identifier'),
                             use ]
-                    
-                    w.writerow(line)
-    
+
+                table.add_row(*line)    
+            
+            # Print it!
+            console.print(table)
+
+        else:
+            # Just print the data
+            print(header)
+            for fa in self.fixedaddr:
+                line = ''
+                use = self.retrieve_use(fa)
+
+                if use == match_use or match_use == 'all':
+                    line = [ fa.get('ipv4addr'),
+                            fa.get('match_client'),
+                            fa.get('mac'),
+                            fa.get('dhcp_client_identifier'),
+                            use ]
+                print(line)
+
+        
         return
     
 
@@ -683,10 +735,14 @@ def main():
     FixedAddr.check_in_use()
     # Output Report
     if args.file:
-        with open(args.file, mode='w', newline='') as f:
-            FixedAddr.report(file=f, type=csv, match_use=args.filter)
+        logging.info(f'Writting CSV to {args.file}')
+        try:
+            fh = open(args.file, mode='w', newline='')
+            FixedAddr.report(file=fh, type='csv', match_use=args.filter)
+        except Exception as err:
+            logging.error(f'Err: {err} opening file {args.file}')
     else:
-        FixedAddr.report(match_use=args.filter)
+        FixedAddr.report(format='table', match_use=args.filter)
 
     run_time = time.perf_counter() - t1
     
