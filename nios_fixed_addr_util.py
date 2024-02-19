@@ -564,11 +564,11 @@ class FIXEDADDR:
             # Check whether we update NIOS
             if self.use_eas:
                 if check_ea():
-                    logging.info(f'Updating fixed address: {faddr.get('ipv4addr')}')
+                    logging.info(f'Updating fixed address: {faddr.get("ipv4addr")}')
                     if self.modify_fixed_addr(obj=faddr):
-                        logging.info(f'Successfully updated: {faddr.get('ipv4addr')}')
+                        logging.info(f'Successfully updated: {faddr.get("ipv4addr")}')
                     else:
-                        logging.error(f'Failed to update: {faddr.get('ipv4addr')}')
+                        logging.error(f'Failed to update: {faddr.get("ipv4addr")}')
                 else:
                     logging.error(f'Extensible Attribute: {self.ea_name} does not exist')
 
