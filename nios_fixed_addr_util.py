@@ -42,7 +42,7 @@
  POSSIBILITY OF SUCH DAMAGE.
 
 '''
-__version__ = '0.1.5'
+__version__ = '0.2.0'
 __author__ = 'Chris Marrison'
 __author_email__ = 'chris@infoblox.com'
 __license__ = 'BSD'
@@ -409,7 +409,7 @@ class FIXEDADDR:
     def get_lease_info(self, ip='', **params):
         '''
         '''
-        return_fields = '_return_fields=address,binding_state,hardware,cltt,ends,served_by'
+        return_fields = '_return_fields=address,binding_state,hardware,starts,ends,cltt,served_by'
         url = f'{self.base_url}/lease?{return_fields}&address={ip}'
 
         if params:
@@ -439,7 +439,7 @@ class FIXEDADDR:
         '''
         faddr: list = []
         in_use: bool = False
-        cltt: str = ''
+        start_time: str = ''
 
         # Check whether we have the fixed addresses
         if not self.fixedaddr:
@@ -462,47 +462,47 @@ class FIXEDADDR:
                         logging.debug(f'Lease data: {leases}')
                         for l in leases:
                             if mac == l.get('hardware'):
-                                cltt = l.get('cltt')
+                                start_time = l.get('starts')
                             
-                                if cltt:
+                                if start_time:
                                     # Check timestamp
-                                    if self.check_timestamp(timestamp=cltt, days=days):
+                                    if self.check_timestamp(timestamp=start_time, days=days):
                                         in_use = 'True'
                                         break
                                     else:
                                         in_use = 'False'
                                     logging.debug(f'IP: {ip}, Used: {in_use}')
                                 else:
-                                    # No CLTT found
+                                    # No start_time found
                                     in_use = 'False'
-                                    logging.debug(f'No CLTT for IP: {ip}, Used: {in_use}')
+                                    logging.debug(f'No start_time for IP: {ip}, Used: {in_use}')
                     else:
                         # No lease found
                         in_use = 'Unknown'
                         logging.debug(f'No leases found for IP: {ip}, Used: {in_use}')
                 else:
-                    # Just check for a CLTT
+                    # Just check for a start_time
                     ip = fa.get('ipv4addr')
                     logging.info(f'Checking lease data for: {ip}')
                     leases = self.get_lease_info(ip=ip)
                     if leases:
                         logging.debug(f'Lease data: {leases}')
                         for l in leases:
-                            cltt = l.get('cltt')
+                            start_time = l.get('starts')
                             # Can't seem to find client_id in lease object 
-                            # so just look for a CLTT
-                            if cltt:
+                            # so just look for start time
+                            if start_time:
                                 # Check timestamp
-                                if self.check_timestamp(timestamp=cltt, days=days):
+                                if self.check_timestamp(timestamp=start_time, days=days):
                                     in_use = 'True'
                                     break
                                 else:
                                     in_use = 'False'
                                 logging.debug(f'IP: {ip}, Used: {in_use}')
                             else:
-                                # No CLTT found
+                                # No start_time found
                                 in_use = 'False'
-                                logging.debug(f'No CLTT for IP: {ip}, Used: {in_use}')
+                                logging.debug(f'No start_time for IP: {ip}, Used: {in_use}')
                     else:
                         # No lease found
                         in_use = 'Unknown'
